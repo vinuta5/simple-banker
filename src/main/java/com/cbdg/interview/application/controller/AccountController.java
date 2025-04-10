@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -23,6 +24,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get accounts by customer ID")
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<Account>> getAccountsByCustomerId(@PathVariable Long customerId) {
@@ -30,6 +32,7 @@ public class AccountController {
         return ResponseEntity.ok(accounts);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get account details by account ID")
     @GetMapping("/{accountId}")
     public ResponseEntity<Account> getAccountDetails(@PathVariable Long accountId) {
@@ -37,6 +40,7 @@ public class AccountController {
         return ResponseEntity.ok(account);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Create a new account")
     @PostMapping
     public ResponseEntity<Account> createAccount(@Valid @RequestBody Account account) {

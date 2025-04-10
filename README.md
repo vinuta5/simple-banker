@@ -1,12 +1,14 @@
 # Banking Application API
 
-This project is a simple banking application API that allows for account management and transactions.
+This project is a Spring Boot banking application API that allows for account management and transactions, serving new and existing banking customers.
 
 ## Features
 
+- User Authentication and Authorization
 - Create and view accounts
 - Make transactions between accounts
 - View monthly statements
+- Transfer money between accounts
 
 ## Getting Started
 
@@ -28,6 +30,32 @@ The application will start on `http://localhost:8080`
 Once the application is running, you can view the API documentation at:
 
 `http://localhost:8080/swagger-ui.html`
+
+## Project Structure
+
+The project follows a standard Spring Boot structure:
+
+- `src/main/java/com/cbdg/interview/application/`
+   - `config/`: Configuration classes (OpenAPIConfig, SecurityConfig)
+   - `controller/`: REST API controllers (AccountController, TransactionController)
+   - `exception/`: Custom exception classes and global exception handler
+   - `model/`: Entity classes (Account, Transaction)
+   - `repository/`: Data access layer (AccountRepository, TransactionRepository)
+   - `service/`: Business logic layer (AccountService, TransactionService)
+
+## Database
+
+The application uses an in-memory H2 database. You can access the H2 console at:
+`http://localhost:8080/h2-console`
+
+Use the following credentials:
+- JDBC URL: `jdbc:h2:mem:testdb`
+- Username: `sa`
+- Password: (leave blank)
+
+## Authentication
+
+The application uses OAuth 2.0 for authentication. A mock OAuth2 server is configured for testing purposes.
 
 ## Usage
 
@@ -54,3 +82,5 @@ Here are some example API calls:
 ## Testing
 
 To run the tests, execute:
+
+mvn test

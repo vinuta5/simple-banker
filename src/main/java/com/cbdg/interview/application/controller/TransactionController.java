@@ -2,53 +2,56 @@ package com.cbdg.interview.application.controller;
 
 import com.cbdg.interview.application.model.Transaction;
 import com.cbdg.interview.application.service.TransactionService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.cbdg.interview.application.security.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/transactions")
-@Tag(name = "Transaction", description = "Transaction management APIs")
 public class TransactionController {
 
-    private final TransactionService transactionService;
+    @Autowired
+    private TransactionService transactionService;
 
     @Autowired
-    public TransactionController(TransactionService transactionService) {
-        this.transactionService = transactionService;
-    }
+    private TokenService tokenService;
 
-    @Operation(summary = "Create a new transaction")
     @PostMapping
-    public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) {
-        Transaction createdTransaction = transactionService.createTransaction(transaction);
-        return ResponseEntity.ok(createdTransaction);
+    public ResponseEntity<Transaction> createTransaction(@RequestBody Map<String, Object> request) {
+        if (!tokenService.validateToken((String) request.get("token"))) {
+            return ResponseEntity.status(401).build();
+        }
+        Transaction transaction = new Transaction();
+        // Set transaction properties from request
+        return ResponseEntity.ok(transactionService.createTransaction(transaction));
     }
 
-    @Operation(summary = "Get monthly statement for an account")
-    @GetMapping("/statement/{accountId}")
+    @PostMapping("/statement/{accountId}")
     public ResponseEntity<List<Transaction>> getMonthlyStatement(
             @PathVariable Long accountId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        List<Transaction> transactions = transactionService.getMonthlyStatement(accountId, startDate, endDate);
-        return ResponseEntity.ok(transactions);
+            @RequestBody Map<String, Object> request) {
+        if (!tokenService.validateToken((String) request.get("token"))) {
+            return ResponseEntity.status(401).build();
+        }
+        LocalDateTime startDate = LocalDateTime.parse((String) request.get("startDate"));
+        LocalDateTime endDate = LocalDateTime.parse((String) request.get("endDate"));
+        return ResponseEntity.ok(transactionService.getMonthlyStatement(accountId, startDate, endDate));
     }
 
-    @Operation(summary = "Transfer money between accounts")
     @PostMapping("/transfer")
-    public ResponseEntity<Transaction> transferMoney(
-            @RequestParam Long fromAccountId,
-            @RequestParam Long toAccountId,
-            @RequestParam BigDecimal amount) {
-        Transaction transaction = transactionService.transferMoney(fromAccountId, toAccountId, amount);
-        return ResponseEntity.ok(transaction);
+    public ResponseEntity<Transaction> transferMoney(@RequestBody Map<String, Object> request) {
+        if (!tokenService.validateToken((String) request.get("token"))) {
+            return ResponseEntity.status(401).build();
+        }
+        Long fromAccountId = Long.valueOf(request.get("fromAccountId").toString());
+        Long toAccountId = Long.valueOf(request.get("toAccountId").toString());
+        BigDecimal amount = new BigDecimal(request.get("amount").toString());
+        return ResponseEntity.ok(transactionService.transferMoney(fromAccountId, toAccountId, amount));
     }
 }
